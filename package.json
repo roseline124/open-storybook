@@ -6,11 +6,12 @@
   "engines": {
     "vscode": "^1.97.0"
   },
-  "publisher": "Roseline Song",
+  "publisher": "roseline-song",
   "categories": [
     "Other",
     "Testing"
   ],
+  "icon": "logo.png",
   "repository": {
     "url": "https://github.com/roseline124/open-storybook"
   },
