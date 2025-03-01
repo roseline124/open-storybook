@@ -14,8 +14,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "open-storybook.helloWorld",
-        "title": "Hello World"
+        "command": "open-storybook.openFocusedStorybook",
+        "title": "Open Storybook: Open this storybook"
       }
     ]
   },
