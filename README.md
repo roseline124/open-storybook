@@ -1,3 +1,19 @@
+# Open Storybook
+
+## How to use
+
+1. Open the command palette (Ctrl+Shift+P or Cmd+Shift+P)
+
+```
+Open Storybook
+```
+
+2. You can restore the .storybook/main.ts (or main.js) by removing Storybook terminal.
+
+## Demo
+
+![demo](./demo.gif)
+
 📖 Focused Storybook
 Focused Storybook is a VSCode extension that helps developers run Storybook with only the currently focused story file, significantly speeding up Storybook startup times — especially in large monorepos.
 
