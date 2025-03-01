@@ -1,71 +1,95 @@
-# open-storybook README
+📖 Focused Storybook
+Focused Storybook is a VSCode extension that helps developers run Storybook with only the currently focused story file, significantly speeding up Storybook startup times — especially in large monorepos.
 
-This is the README for your extension "open-storybook". After writing up a brief description, we recommend including the following sections.
+🚀 Features
 
-## Features
+Automatically detects the nearest .storybook/main.ts (or main.js).
+Temporarily overrides the stories array to include only the currently active story file.
+Runs npm run storybook dev -p 6006 directly from the correct project directory.
+Automatically restores the original main.ts/main.js when Storybook shuts down.
+Supports multiple concurrent Storybook sessions — each with its own isolated config and backup.
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+🎯 Why Use Focused Storybook?
 
-For example if there is an image subfolder under your extension project workspace:
+Working with large Storybook projects can be slow, especially when all stories across a monorepo or large project need to be loaded.
+Focused Storybook lets you:
 
-\!\[feature X\]\(images/feature-x.png\)
+Test a single story in isolation.
+Avoid loading hundreds of unnecessary stories.
+Quickly debug a specific component's story.
+Run multiple Storybook instances for different components simultaneously.
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+📂 How It Works
 
-## Requirements
+Open any \*.stories.tsx (or .js, .jsx, .mdx) file.
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+Run the command:
+Open Focused Storybook from the command palette (Ctrl+Shift+P or Cmd+Shift+P).
 
-## Extension Settings
+The extension:
+Locates the nearest .storybook/main.ts (or .storybook/main.js).
+Creates a backup of the original config.
+Replaces the stories array to load only the current file.
+Starts Storybook.
+Restores the original main.ts/main.js when Storybook exits.
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+⚙️ Requirements
 
-For example:
+Node.js 18+ (recommended)
+Storybook installed locally in the project (no global dependency required)
+Works with both JavaScript and TypeScript Storybook configurations
 
-This extension contributes the following settings:
+🛠️ Configuration
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+This extension assumes:
 
-## Known Issues
+Storybook can be started with:
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+```
+npm run storybook dev -p 6006
+```
 
-## Release Notes
+.storybook directory is present at the project root or in the nearest ancestor folder.
+If you use a different command (yarn, pnpm), you can customize the command in future versions.
 
-Users appreciate release notes as you update your extension.
+🔒 Safety
 
-### 1.0.0
+Each Storybook session gets its own backup file, so multiple sessions can run in parallel safely.
+If the editor crashes, you can manually restore the backup using the command:
+Restore Storybook Config
 
-Initial release of ...
+📸 Example
+Example project structure:
 
-### 1.0.1
+```
+apps/
+    design-system/
+        .storybook/
+            main.ts
+        src/
+            components/
+                Button/
+                    Button.stories.tsx
+```
 
-Fixed issue #.
+When you open Button.stories.tsx and run Open Focused Storybook, only that file loads.
 
-### 1.1.0
+🏗️ Supported Storybook Versions
 
-Added features X, Y, and Z.
+Storybook 6+
+Supports both Next.js and standard React setups
+Works in monorepos (Rush, Turborepo, Nx)
 
----
+💬 Feedback & Issues
 
-## Following extension guidelines
+Found a bug? Have a feature request?
+Please open an issue on the repository.
 
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
+⚠️ Disclaimer
 
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
+This extension temporarily modifies your .storybook/main.ts (or main.js). The changes are automatically reverted when Storybook shuts down.
+However, if you force close VSCode, you may need to manually restore the original file using the provided restore command.
 
-## Working with Markdown
+📦 Installation
 
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+You can install this extension directly from the VSCode Marketplace (link will be available after publishing).
