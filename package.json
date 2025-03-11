@@ -22,8 +22,21 @@
       {
         "command": "open-storybook.openFocusedStorybook",
         "title": "Open Storybook: Open this storybook"
+      },
+      {
+        "command": "open-storybook.openStoriesInFocusedFolder",
+        "title": "Open Stories: Open stories in this folder"
       }
-    ]
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "open-storybook.openStoriesInFocusedFolder",
+          "when": "explorerResourceIsFolder == true",
+          "group": "navigation"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
