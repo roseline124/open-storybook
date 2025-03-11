@@ -1,7 +1,9 @@
 import path from "path";
 import fs from "fs";
 import * as vscode from "vscode";
-import { findNearestStorybookConfig } from "./findNearestStorybookConfig";
+import { findNearestStorybookConfig } from "./utils/findNearestStorybookConfig";
+import { findNearestPackageJson } from "./utils/findNearestPackageJson";
+import { getStorybookCommandFromPackageJson } from "./utils/getStorybookCommandFromPackageJson";
 
 const storybookSessions = new Map<
   vscode.Terminal,
@@ -25,8 +27,8 @@ export function openFocusedStorybook() {
   }
 
   const sessionId = new Date().getTime();
-  const backupPath = `${storybookConfigPath}.backup-${sessionId}`;
-  fs.copyFileSync(storybookConfigPath, backupPath);
+  // const backupPath = `${storybookConfigPath}.backup-${sessionId}`;
+  // fs.copyFileSync(storybookConfigPath, backupPath);
 
   updateStorybookStories(storybookConfigPath, [focusedFile]);
 
@@ -35,36 +37,47 @@ export function openFocusedStorybook() {
     cwd: path.dirname(path.dirname(storybookConfigPath)),
   });
 
-  storybookSessions.set(terminal, {
-    configPath: storybookConfigPath,
-    backupPath,
-  });
+  // storybookSessions.set(terminal, {
+  //   configPath: storybookConfigPath,
+  //   backupPath,
+  // });
 
   vscode.window.onDidCloseTerminal((closedTerminal) => {
     const session = storybookSessions.get(closedTerminal);
     if (session) {
-      restoreStorybookConfig(session.configPath, session.backupPath);
+      // restoreStorybookConfig(session.configPath, session.backupPath);
       storybookSessions.delete(closedTerminal);
     }
   });
 
-  terminal.sendText("npm run storybook dev -p 6006");
+  // 4️⃣ package.json에서 storybook 실행 명령어 찾기
+  const packageJsonPath = findNearestPackageJson(storybookConfigPath);
+  const storybookCommand = packageJsonPath
+    ? getStorybookCommandFromPackageJson(packageJsonPath)
+    : null;
+
+  if (storybookCommand) {
+    terminal.sendText(storybookCommand);
+  } else {
+    terminal.sendText("npx storybook dev -p 6006");
+  }
   terminal.show();
 }
 
-function restoreStorybookConfig(configPath: string, backupPath: string) {
-  if (fs.existsSync(backupPath)) {
-    fs.copyFileSync(backupPath, configPath);
-    vscode.window.showInformationMessage(
-      `Restored: ${path.basename(configPath)}`
-    );
-  }
+// function restoreStorybookConfig(configPath: string, backupPath: string) {
+//   if (fs.existsSync(backupPath)) {
+//     fs.copyFileSync(backupPath, configPath);
+//     vscode.window.showInformationMessage(
+//       `Restored: ${path.basename(configPath)}`
+//     );
+//   }
 
-  fs.unlinkSync(backupPath);
-}
+//   fs.unlinkSync(backupPath);
+// }
 
 function updateStorybookStories(configPath: string, newStories: string[]) {
-  const content = fs.readFileSync(configPath, "utf-8");
+  let content = fs.readFileSync(configPath, "utf-8");
+  content = content.replace(/^\s*\/\/?\s*stories:\s*\[[^\]]*\]\s*,?/gm, "");
   const updatedContent = content.replace(
     /stories:\s*\[[^\]]*\]/,
     `stories: ${JSON.stringify(newStories, null, 2)}`
