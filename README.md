@@ -2,6 +2,15 @@
 
 ## How to use
 
+### Open all stories in the folder
+
+1. Select a folder in Explorer
+2. Right-click and select "Open Stories in this folder"
+
+![demo image](./demo_image.png)
+
+### Open only one storybook
+
 1. Open the command palette (Ctrl+Shift+P or Cmd+Shift+P)
 
 ```
@@ -10,7 +19,7 @@ Open Storybook
 
 2. You can restore the .storybook/main.ts (or main.js) by removing Storybook terminal.
 
-## Demo
+3. Demo
 
 ![demo](./demo.gif)
 
