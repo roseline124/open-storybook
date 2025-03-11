@@ -4,13 +4,10 @@ import * as vscode from "vscode";
 import { findNearestStorybookConfig } from "./utils/findNearestStorybookConfig";
 import { findNearestPackageJson } from "./utils/findNearestPackageJson";
 import { getStorybookCommandFromPackageJson } from "./utils/getStorybookCommandFromPackageJson";
+import { getPackageName } from "./utils/getPackageName";
+import { activeStorybookTerminals, packageStoriesMap } from "./globals";
 
-const storybookSessions = new Map<
-  vscode.Terminal,
-  { configPath: string; backupPath: string }
->();
-
-export function openFocusedStorybook() {
+export async function openFocusedStorybook() {
   const activeEditor = vscode.window.activeTextEditor;
   if (!activeEditor) {
     vscode.window.showErrorMessage("No active storybook file.");
@@ -26,32 +23,53 @@ export function openFocusedStorybook() {
     return;
   }
 
-  const sessionId = new Date().getTime();
-  // const backupPath = `${storybookConfigPath}.backup-${sessionId}`;
-  // fs.copyFileSync(storybookConfigPath, backupPath);
+  const packageJsonPath = findNearestPackageJson(storybookConfigPath);
+  if (!packageJsonPath) {
+    vscode.window.showErrorMessage("No package.json found.");
+    return;
+  }
 
-  updateStorybookStories(storybookConfigPath, [focusedFile]);
+  const packageName = packageJsonPath ? getPackageName(packageJsonPath) : null;
+  if (!packageName) {
+    vscode.window.showErrorMessage("Could not determine package name.");
+    return;
+  }
+
+  // 3️⃣ 기존 스토리북 터미널이 실행 중이면 종료
+  if (activeStorybookTerminals[packageName]) {
+    const terminal = activeStorybookTerminals[packageName];
+
+    // ✅ Storybook 프로세스 종료 (Ctrl+C 시그널 전송)
+    terminal.sendText("\u0003", true); // Equivalent to pressing Ctrl+C in the terminal
+    await new Promise((resolve) => setTimeout(resolve, 1000)); // 1초 대기 (정상 종료 보장)
+
+    terminal.dispose(); // 터미널 정리
+    delete activeStorybookTerminals[packageName];
+  }
+
+  if (!packageStoriesMap[packageName]) {
+    packageStoriesMap[packageName] = [focusedFile];
+  } else {
+    packageStoriesMap[packageName].push(focusedFile);
+  }
+
+  updateStorybookStories(storybookConfigPath, packageStoriesMap[packageName]);
 
   const terminal = vscode.window.createTerminal({
-    name: `Storybook (${sessionId})`,
+    name: `Storybook (${packageName})`,
     cwd: path.dirname(path.dirname(storybookConfigPath)),
   });
 
-  // storybookSessions.set(terminal, {
-  //   configPath: storybookConfigPath,
-  //   backupPath,
-  // });
-
-  vscode.window.onDidCloseTerminal((closedTerminal) => {
-    const session = storybookSessions.get(closedTerminal);
-    if (session) {
-      // restoreStorybookConfig(session.configPath, session.backupPath);
-      storybookSessions.delete(closedTerminal);
-    }
+  vscode.window.onDidCloseTerminal(async (closedTerminal) => {
+    closedTerminal.sendText("\u0003", true); // Equivalent to pressing Ctrl+C in the terminal
+    await new Promise((resolve) => setTimeout(resolve, 1000)); // 1초 대기 (정상 종료 보장)
+    delete activeStorybookTerminals[packageName];
   });
 
+  activeStorybookTerminals[packageName] = terminal;
+
   // 4️⃣ package.json에서 storybook 실행 명령어 찾기
-  const packageJsonPath = findNearestPackageJson(storybookConfigPath);
+
   const storybookCommand = packageJsonPath
     ? getStorybookCommandFromPackageJson(packageJsonPath)
     : null;
