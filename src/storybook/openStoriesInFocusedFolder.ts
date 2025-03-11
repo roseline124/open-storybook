@@ -10,8 +10,8 @@ import { activeStorybookTerminals, packageStoriesMap } from "./globals";
 export async function openStoriesInFocusedFolder(uri?: vscode.Uri) {
   let focusedDir: string | null = uri ? uri.fsPath : null;
   if (!focusedDir) {
-    vscode.window.showErrorMessage(
-      "Select a folder in Explorer. Then Right-click and select 'Open Stories in this folder'."
+    vscode.window.showInformationMessage(
+      "Explorer > Folder > Right-click > Open Stories in this folder"
     );
     return;
   }
