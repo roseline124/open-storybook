@@ -4,8 +4,13 @@
 
 ### Open all stories in the folder
 
+```
+Explorer > Folder > Right-click > Open Stories in this folder
+```
+
 1. Select a folder in Explorer
 2. Right-click and select "Open Stories in this folder"
+3. If you already have a storybook open with the command, the second time you run the command, it will **add the new storybook path to the existing storybook.**
 
 ![demo image](./demo_image.png)
 
