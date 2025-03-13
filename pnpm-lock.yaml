@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      zlib:
+        specifier: ^1.0.5
+        version: 1.0.5
     devDependencies:
       '@types/jest':
         specifier: ^29.5.14
@@ -2492,6 +2496,10 @@ packages:
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
+
+  zlib@1.0.5:
+    resolution: {integrity: sha512-40fpE2II+Cd3k8HWTWONfeKE2jL+P42iWJ1zzps5W51qcTsOUKM5Q5m2PFb0CLxlmFAaUuUdJGc3OfZy947v0w==}
+    engines: {node: '>=0.2.0'}
 
 snapshots:
 
@@ -5441,3 +5449,5 @@ snapshots:
   yn@3.1.1: {}
 
   yocto-queue@0.1.0: {}
+
+  zlib@1.0.5: {}

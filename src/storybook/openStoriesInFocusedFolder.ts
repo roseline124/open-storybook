@@ -6,6 +6,8 @@ import { getPackageName } from "./utils/getPackageName";
 import { getStorybookCommandFromPackageJson } from "./utils/getStorybookCommandFromPackageJson";
 import { updateStorybookStories } from "./utils/updateStorybookStories";
 import { activeStorybookTerminals, packageStoriesMap } from "./globals";
+import { getCurrentStorybookConfig } from "./utils/getCurrentStorybookConfig";
+import { restoreStorybookConfig } from "./utils/restoreStorybookConfig";
 
 export async function openStoriesInFocusedFolder(uri?: vscode.Uri) {
   let focusedDir: string | null = uri ? uri.fsPath : null;
@@ -28,11 +30,19 @@ export async function openStoriesInFocusedFolder(uri?: vscode.Uri) {
     return;
   }
 
-  // 2️⃣ 가장 가까운 .storybook/main.ts 찾기
+  // 가장 가까운 .storybook/main.ts 찾기
   const storybookConfigPath = findNearestStorybookConfig(focusedDir);
   if (!storybookConfigPath) {
     vscode.window.showErrorMessage("No Storybook config found.");
     return;
+  }
+
+  // 기존 `stories` 경로를 저장 (되돌리기 위해)
+  if (!packageStoriesMap[packageName]) {
+    packageStoriesMap[packageName] = {
+      current: [],
+      backup: getCurrentStorybookConfig(storybookConfigPath),
+    };
   }
 
   // 3️⃣ 기존 스토리북 터미널이 실행 중이면 종료
@@ -47,21 +57,20 @@ export async function openStoriesInFocusedFolder(uri?: vscode.Uri) {
     delete activeStorybookTerminals[packageName];
   }
 
-  // 4️⃣ 패키지별 stories 경로 업데이트
-  if (!packageStoriesMap[packageName]) {
-    packageStoriesMap[packageName] = [];
-  }
   const newStoriesPath = `${focusedDir.replace(
     /\\/g,
     "/"
   )}/**/*.stories.@(js|jsx|ts|tsx)`;
 
-  if (!packageStoriesMap[packageName].includes(newStoriesPath)) {
-    packageStoriesMap[packageName].push(newStoriesPath);
+  if (!packageStoriesMap[packageName].current.includes(newStoriesPath)) {
+    packageStoriesMap[packageName].current.push(newStoriesPath);
   }
 
   // 5️⃣ .storybook/main.ts 업데이트
-  updateStorybookStories(storybookConfigPath, packageStoriesMap[packageName]);
+  updateStorybookStories(
+    storybookConfigPath,
+    packageStoriesMap[packageName].current
+  );
 
   // 6️⃣ Storybook 실행할 터미널 생성
   const terminal = vscode.window.createTerminal({
@@ -72,7 +81,12 @@ export async function openStoriesInFocusedFolder(uri?: vscode.Uri) {
   vscode.window.onDidCloseTerminal(async (closedTerminal) => {
     closedTerminal.sendText("\u0003", true); // Equivalent to pressing Ctrl+C in the terminal
     await new Promise((resolve) => setTimeout(resolve, 1000)); // 1초 대기 (정상 종료 보장)
+    restoreStorybookConfig(
+      storybookConfigPath,
+      packageStoriesMap[packageName].backup
+    );
     delete activeStorybookTerminals[packageName];
+    packageStoriesMap[packageName].current = [];
   });
 
   activeStorybookTerminals[packageName] = terminal;
@@ -81,7 +95,7 @@ export async function openStoriesInFocusedFolder(uri?: vscode.Uri) {
   const storybookCommand = getStorybookCommandFromPackageJson(packageJsonPath);
 
   if (storybookCommand) {
-    terminal.sendText(storybookCommand);
+    terminal.sendText(`${storybookCommand} -- --ci`);
   } else {
     terminal.sendText("npx storybook dev");
   }
