@@ -83,7 +83,7 @@ export async function openStoriesInFocusedFolder(uri?: vscode.Uri) {
   if (storybookCommand) {
     terminal.sendText(storybookCommand);
   } else {
-    terminal.sendText("npx storybook dev -p 6006");
+    terminal.sendText("npx storybook dev");
   }
 
   terminal.show();
