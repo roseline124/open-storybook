@@ -6,6 +6,7 @@ import { findNearestPackageJson } from "./utils/findNearestPackageJson";
 import { getStorybookCommandFromPackageJson } from "./utils/getStorybookCommandFromPackageJson";
 import { getPackageName } from "./utils/getPackageName";
 import { activeStorybookTerminals, packageStoriesMap } from "./globals";
+import { isStorybookFile } from "./utils/isStorybookFile";
 
 export async function openFocusedStorybook() {
   const activeEditor = vscode.window.activeTextEditor;
@@ -15,6 +16,11 @@ export async function openFocusedStorybook() {
   }
 
   const focusedFile = activeEditor.document.uri.fsPath;
+  if (!isStorybookFile(focusedFile)) {
+    vscode.window.showErrorMessage(`It's not a storybook file: ${focusedFile}`);
+    return;
+  }
+
   const fileDir = path.dirname(focusedFile);
   const storybookConfigPath = findNearestStorybookConfig(fileDir);
 
